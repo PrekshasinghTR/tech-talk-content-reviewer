@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Talk Content Reviewer</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .rating {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .rating.high { background-color: #d4edda; color: #155724; }
+        .rating.medium { background-color: #fff3cd; color: #856404; }
+        .rating.low { background-color: #f8d7da; color: #721c24; }
+        
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .section {
+            margin: 20px 0;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .issue-list, .fix-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .issue-list li, .fix-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .issue-list li:before {
+            content: "⚠️ ";
+            margin-right: 8px;
+        }
+        
+        .fix-list li:before {
+            content: "💡 ";
+            margin-right: 8px;
+        }
+        
+        .placeholder-flag {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .placeholder-flag.yes {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .placeholder-flag.no {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Tech Talk Content Reviewer</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            AI agent that evaluates Tech Talk documentation for quality, completeness, and improvement opportunities.
+        </p>
+        
+        <div class="input-section">
+            <label for="title">Content Title (optional):</label>
+            <input type="text" id="title" placeholder="e.g., API Integration Guide">
+        </div>
+        
+        <div class="input-section">
+            <label for="content">Content to Review:</label>
+            <textarea id="content" placeholder="Paste your Tech Talk content here...
+
+Example:
+# API Integration Guide
+
+This guide covers how to integrate with our API.
+
+## Overview
+TBD - need to add overview section
+
+## Authentication
+Use API keys for authentication. Example coming soon.
+
+## Endpoints
+- GET /users
+- POST /users
+
+More details to be added later."></textarea>
+        </div>
+        
+        <button onclick="reviewContent()" id="reviewBtn">Review Content</button>
+        
+        <div id="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function reviewContent() {
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const resultsDiv = document.getElementById('results');
+            const reviewBtn = document.getElementById('reviewBtn');
+            
+            if (!content.trim()) {
+                alert('Please enter some content to review.');
+                return;
+            }
+            
+            // Show loading state
+            reviewBtn.disabled = true;
+            reviewBtn.textContent = 'Reviewing...';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Analyzing content...</div>';
+            resultsDiv.style.display = 'block';
+            
+            try {
+                // For demo purposes, we'll simulate the API call
+                // In production, replace this with actual API call to your server
+                const response = await simulateAPICall(content, title);
+                displayResults(response);
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            } finally {
+                reviewBtn.disabled = false;
+                reviewBtn.textContent = 'Review Content';
+            }
+        }
+        
+        // Simulate API call for demo (replace with real API call)
+        async function simulateAPICall(content, title) {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Simple simulation of the reviewer logic
+            const wordCount = content.split(' ').length;
+            const hasPlaceholders = /\b(tbd|todo|coming soon|placeholder)\b/i.test(content);
+            const hasExamples = /\b(example|code|```)\b/i.test(content);
+            const hasMetadata = /\b(author|date|updated)\b/i.test(content);
+            
+            let score = 0;
+            if (title && title.length > 5) score += 10;
+            if (wordCount > 50) score += 15;
+            if (wordCount > 100) score += 20;
+            if (hasExamples) score += 20;
+            if (hasMetadata) score += 10;
+            if (content.includes('#') || content.includes('*')) score += 5;
+            
+            if (hasPlaceholders) score -= 20;
+            
+            const rating = score >= 80 ? 'High' : score >= 50 ? 'Medium' : 'Low';
+            
+            const issues = [];
+            const fixes = [];
+            
+            if (!title || title.length < 5) {
+                issues.push('Missing or inadequate title');
+                fixes.push('Add a clear, descriptive title');
+            }
+            if (wordCount < 100) {
+                issues.push('Content too brief');
+                fixes.push('Expand with detailed explanations');
+            }
+            if (!hasExamples) {
+                issues.push('Missing practical examples');
+                fixes.push('Include code examples or samples');
+            }
+            if (hasPlaceholders) {
+                issues.push('Contains placeholder text');
+                fixes.push('Replace placeholders with actual content');
+            }
+            
+            return {
+                content_id: 'demo_' + Date.now(),
+                title: title || 'Untitled Content',
+                overall_rating: rating,
+                completeness_score: Math.max(0, Math.min(100, score)),
+                placeholder_flags: {
+                    has_placeholders: hasPlaceholders,
+                    details: hasPlaceholders ? 'Found placeholder text' : 'No placeholders detected'
+                },
+                key_issues: issues,
+                suggested_fixes: fixes,
+                evaluation_timestamp: new Date().toISOString()
+            };
+        }
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const ratingClass = data.overall_rating.toLowerCase();
+            
+            resultsDiv.innerHTML = `
+                <h2>📊 Review Results</h2>
+                
+                <div class="section">
+                    <h3>Overall Assessment</h3>
+                    <p><strong>Title:</strong> ${data.title}</p>
+                    <p><strong>Rating:</strong> <span class="rating ${ratingClass}">${data.overall_rating}</span></p>
+                    <p><strong>Completeness Score:</strong> <span class="score">${data.completeness_score}%</span></p>
+                </div>
+                
+                <div class="section">
+                    <h3>Placeholder Detection</h3>
+                    <div class="placeholder-flag ${data.placeholder_flags.has_placeholders ? 'yes' : 'no'}">
+                        ${data.placeholder_flags.has_placeholders ? '⚠️' : '✅'} 
+                        ${data.placeholder_flags.details}
+                    </div>
+                </div>
+                
+                ${data.key_issues.length > 0 ? `
+                <div class="section">
+                    <h3>Key Issues Found</h3>
+                    <ul class="issue-list">
+                        ${data.key_issues.map(issue => `<li>${issue}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                ${data.suggested_fixes.length > 0 ? `
+                <div class="section">
+                    <h3>Suggested Improvements</h3>
+                    <ul class="fix-list">
+                        ${data.suggested_fixes.map(fix => `<li>${fix}</li>`).join('')}
+                    </ul>
+                </div>
+                ` : ''}
+                
+                <div class="section">
+                    <h3>Evaluation Details</h3>
+                    <p><strong>Content ID:</strong> ${data.content_id}</p>
+                    <p><strong>Evaluated:</strong> ${new Date(data.evaluation_timestamp).toLocaleString()}</p>
+                </div>
+            `;
+        }
+        
+        // Add sample content for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            const sampleContent = `# API Integration Guide
+
+This guide covers how to integrate with our API.
+
+## Overview
+TBD - need to add overview section
+
+## Authentication
+Use API keys for authentication. Example coming soon.
+
+## Endpoints
+- GET /users
+- POST /users
+
+More details to be added later.`;
+            
+            document.getElementById('content').value = sampleContent;
+            document.getElementById('title').value = 'API Integration Guide';
+        });
+    </script>
+</body>
+</html>
